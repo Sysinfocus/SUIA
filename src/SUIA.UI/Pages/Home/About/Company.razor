@@ -1,0 +1,11 @@
+﻿@page "/About/Company"
+<h3>About / Company</h3>
+<Separator class="mtb1" />
+<AuthorizeView Roles="Admin">
+    <Authorized>
+        <p>Welcome <b>Administrator!</b></p>
+    </Authorized>
+    <NotAuthorized>
+        <p>This page is available to users having <b>Admin</b> role only and you're not an admin.</p>
+    </NotAuthorized>
+</AuthorizeView>

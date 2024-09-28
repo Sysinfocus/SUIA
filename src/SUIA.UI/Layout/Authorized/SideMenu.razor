@@ -1,0 +1,136 @@
+@using System.Security.Claims
+@inject BrowserExtensions be
+@inject StateManager sm
+
+<style>
+    .sidemenu {
+        width: 100%;
+        max-width: 250px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        background-color: var(--primary-bg);
+        backdrop-filter: opacity(0.5);
+        overflow: auto;
+        padding: 0.5rem;
+        border-right: 1px solid var(--primary-border);
+    }
+
+    .parent > span {
+        margin-left: -4px
+    }
+
+    footer {
+        font-size: 0.8rem;
+        text-align: center;
+        opacity: 0.5;
+    }
+
+    .show {
+        animation: show 300ms ease-in-out forwards;
+    }
+
+    .hide {
+        animation: hide 300ms ease-in-out forwards;
+    }
+
+    @@keyframes show {
+        0% {
+            opacity: 0;
+            transform: translateX(-100%);
+            max-width: 0
+        }
+
+        99% {
+            transform: translateX(0);
+        }
+
+        100% {
+            max-width: 250px;
+            opacity: 1;
+            padding: 0.5rem;
+            visibility: visible;
+        }
+    }
+
+    @@keyframes hide {
+        0% {
+            opacity: 1;
+            transform: translateX(0);
+            max-width: 250px;
+        }
+
+        99% {
+            transform: translateX(-100%);
+        }
+
+        100% {
+            opacity: 0;
+            padding: 0;
+            max-width: 0;
+            visibility: hidden;
+        }
+    }
+</style>
+
+<div class="sidemenu @(Show ? "show" : "hide")" style='@(isDesktop ? null : "position: absolute; height: calc(100% - 40px); max-width: 100% !important")'>
+    <Treeview Items="@menus" EnableIcons OnClick="HandleMenuClick" />
+    <footer>&copy; 2024, Your Company Name.</footer>
+</div>
+
+@code
+{
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public EventCallback<bool> OnSideMenuToggle { get; set; }
+
+    private bool isDesktop;
+
+    private List<TreeviewModel>? menus;
+
+    protected override void OnInitialized()
+    {
+        menus = [
+            new(1, 0, "Home", "home") { Collapsed = true },
+            new(2, 0, "About", "store") { Collapsed = true },
+            new(3, 2, "Company", "source_environment") { Collapsed = true },
+            new(4, 2, "Management", "diversity_1") { Collapsed = true },
+            new(5, 0, "Products", "category") { Collapsed = true },
+            new(6, 5, "Product - A", "counter_1") { Collapsed = true },
+            new(7, 5, "Product - B", "counter_2") { Collapsed = true },
+            new(8, 5, "Product - C", "counter_3") { Collapsed = true },
+            new(9, 0, "Services", "design_services") { Collapsed = true },
+            new(10, 0, "Contact", "contact_support") { Collapsed = true },
+        ];
+
+        var user = (ClaimsPrincipal)sm.GetFromState("User")!;
+        if (user is not null && user.Claims.FirstOrDefault(x => x.Type == "IsAdmin")?.Value == "true")
+        {
+            menus.Add(new(11, 0, "Administration", "admin_panel_settings") { Collapsed = false });
+            menus.Add(new(12, 11, "Manage Users", "people") { Collapsed = true });
+            menus.Add(new(13, 11, "Manage Roles", "task_alt") { Collapsed = true });
+        }
+    }
+
+    protected override async Task OnParametersSetAsync() => isDesktop = await be.IsDesktop();
+
+    private async Task HandleMenuClick(TreeviewModel model)
+    {
+        if (model.Text == "Company") await Goto("About/Company");
+        else if (model.Text == "Management") await Goto("About/Management");
+        else if (model.Text == "Product - A") await Goto("Products/A");
+        else if (model.Text == "Product - B") await Goto("Products/B");
+        else if (model.Text == "Product - C") await Goto("Products/C");
+        else if (model.Text == "Services") await Goto("Services");
+        else if (model.Text == "Contact") await Goto("Contact");
+        else if (model.Text == "Manage Users") await Goto("Administration/Users");
+        else if (model.Text == "Manage Roles") await Goto("Administration/Roles");
+        else if (model.Text == "Home") await Goto("Home");
+    }
+
+    private async Task Goto(string url)
+    {
+        be.Goto(url);
+        if (!isDesktop) Show = false;
+        await OnSideMenuToggle.InvokeAsync(Show);
+    }
+}

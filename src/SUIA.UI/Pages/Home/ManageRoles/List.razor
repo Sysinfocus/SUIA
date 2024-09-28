@@ -1,0 +1,199 @@
+﻿@page "/Administration/Roles"
+@attribute [Authorize(Roles = "Admin")]
+@inject IAPIService api
+
+<section class="flex-col">
+    <div class="flex jcsb aic">
+        <h3>Manage Roles</h3>
+        <Button Icon="add" Text="New Role" Tooltip="Add New Role" OnClick="() => showAdd = true" AccessKey="+" />
+    </div>
+    <div class="flex-col">
+        @if (pagedData is not null)
+        {
+            <DataTable Items="@pagedData" TItem="RoleModel" Height="calc(100vh - 190px)">
+                <DataColumns>
+                    <DataTableColumn Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
+                        <Template>
+                            <div class="flex jcc aic">
+                                <Icon Name="delete" Tooltip="Delete" Size="18px" Color="red" OnClick="() => HandleDelete(context)" />
+                                <Icon Name="edit" Tooltip="Edit" Size="18px" Color="royalblue" OnClick="() => HandleEdit(context)" />
+                            </div>
+                        </Template>
+                    </DataTableColumn>
+                    <DataTableColumn Property="d => d.Name" Header="Name" SortOn="@_sortModel" OnSort="HandleSorting" />
+                    <DataTableColumn Property="d => d.NormalizedName" Header="Normalized Name" SortOn="@_sortModel" OnSort="HandleSorting" />
+                    <DataTableColumn Property="d => d.ConcurrencyStamp" Header="Concurrency Stamp" SortOn="@_sortModel" OnSort="HandleSorting" />
+                </DataColumns>
+            </DataTable>
+
+            <div class="desktop">
+                <div class="flex jcsb aic">
+                    <p class="muted">@SelectedRecordCount()</p>
+                    <Pagination State="@paging" OnPageChange="HandlePaging" ActiveType="ButtonType.Primary" ShowFirstLast PreviousText="" NextText="" />
+                </div>
+            </div>
+
+            <div class="mobile">
+                <div class="flex-col aic">
+                    <p class="muted">@SelectedRecordCount()</p>
+                    <Pagination State="@paging" OnPageChange="HandlePaging" ActiveType="ButtonType.Primary" ShowFirstLast PreviousText="" NextText="" />
+                </div>
+            </div>
+        }
+        else
+        {
+            @if (message is null)
+            {
+                <p>Loading...</p>
+            }
+            else
+            {
+                <Alert Title="API Failed" Description="message" Type="AlertType.Destructive" Icon="error" />
+            }
+        }
+    </div>
+</section>
+
+@if (showAdd)
+{
+    <Create Show="showAdd" OnAdd="HandleAdd" OnDiscard="HandleDiscard" />
+}
+else if (showUpdate && updateModel is not null)
+{
+    <Update Id="@updateModel.Id" Show="showUpdate" OnUpdate="HandleUpdate" OnCancel="HandleCancel" />
+}
+else if (showDelete)
+{
+    <Delete OnCancel="HandleDeleteCancelled" OnConfirm="HandleDeleteConfirmed" />
+}
+
+<Toast Show="@showToast">
+    <div class="flex">
+        <div class="flex-col g4">
+            <p class="small" style="background-color: inherit; color: inherit">Uh oh! Something went wrong.</p>
+            <small>@message</small>
+        </div>
+    </div>
+</Toast>
+
+@code
+{
+    private List<RoleModel>? data;
+    private IEnumerable<RoleModel>? pagedData;
+    private SortModel _sortModel = new() { Header = "ID", IsAscending = true };
+    private PaginationState paging = new() { CurrentPage = 1, TotalRecords = 0 };
+    private string? message;
+    private bool showAdd, showUpdate, showDelete, showToast;
+    private RoleModel? updateModel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        var result = await api.GetAsync<List<RoleModel>>(EndpointConstants.GET_ROLES);
+        if (result.IsSuccess)
+        {
+            data = result.Data;
+            if (data is not null)
+            {
+                paging.TotalRecords = (int)data.Count;
+                pagedData = data.Take(paging.PageSize);
+            }
+        }
+        else
+        {
+            message = result.Message;
+        }
+    }
+
+    private void HandleDelete(RoleModel dataItem)
+    {
+        updateModel = dataItem;
+        showDelete = true;
+    }
+
+    private void HandleEdit(RoleModel dataItem)
+    {
+        updateModel = dataItem;
+        showUpdate = true;
+    }
+
+    private void HandleSorting(SortModel sortModel)
+    {
+        if (data is null) return;
+        data = (sortModel.Header.ToLower(), sortModel.IsAscending) switch
+        {
+            ("name", true) => data.OrderBy(a => a.Name).ToList(),
+            ("name", false) => data.OrderByDescending(a => a.Name).ToList(),
+            ("normalized name", true) => data.OrderBy(a => a.NormalizedName).ToList(),
+            ("normalized name", false) => data.OrderByDescending(a => a.NormalizedName).ToList(),
+            (_, _) => data
+        };
+        paging.CurrentPage = 1;
+        HandlePaging();
+    }
+
+    private string SelectedRecordCount()
+    {
+        return $"Showing {pagedData?.Count()} / {data?.Count()} records.";
+    }
+
+    private void HandlePaging()
+    {
+        var skip = (paging.CurrentPage - 1) * paging.PageSize;
+        pagedData = data!.Skip(skip).Take(paging.PageSize);
+    }
+
+    private async Task HandleAdd()
+    {
+        await LoadDataAsync();
+        showAdd = false;
+    }
+
+    private void HandleDiscard()
+    {
+        showAdd = false;
+    }
+
+    private async Task HandleUpdate()
+    {
+        await LoadDataAsync();
+        updateModel = null;
+        showUpdate = false;
+    }
+
+    private void HandleCancel()
+    {
+        updateModel = null;
+        showUpdate = false;
+    }
+
+    private async Task HandleDeleteConfirmed()
+    {
+        message = null;
+        showDelete = false;
+        if (updateModel is null) return;
+        var result = await api.DeleteAsync<IEmpty>(string.Format(EndpointConstants.GET_ROLE, updateModel.Id));
+        if (result.IsSuccess)
+        {
+            data?.Remove(updateModel);
+            HandlePaging();
+        }
+        else
+        {
+            message = "Delete failed.";
+            showToast = true;
+            await Task.Delay(3000);
+            showToast = false;
+        }
+    }
+
+    private void HandleDeleteCancelled()
+    {
+        updateModel = null;
+        showDelete = false;
+    }
+}

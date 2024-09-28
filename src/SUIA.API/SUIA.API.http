@@ -1,0 +1,43 @@
+# @SUIA.API_HostAddress = https://localhost:7035
+@SUIA.API_HostAddress = http://localhost:5041
+
+@REFRESHTOKEN = CfDJ8GhKtuGWlh9LrwdtrextRL5CMvJlHV4fF01vK4nTaJc1VcGMx7PYnH4Gyn0IznBqILRgcgXdqL-8uGOhBYctD1Y4JjrMtX9BBi0AbhWz6I64nqew2JxdeCPWhYVoujQkqMLeYQd_tZFx4wGZgZSlml2v3H121OCGjDZxt6hpHb8NMZd0sYQ6MI_KuXxhAnXeV8uLGOzCQoLTmfH78rILOQ2q7XklwYfHIDJ44ZYppna5f_9ULl2bifnBcj4n9ozuhCh09GPldYtIBO0bcowdEJAe_xO636JTpPNszvpCu19oNgPsItNBS0hk_Q5TtYEF5Y05CnZsqdmHXI6ADNr6ZwiWQR1lm2ci9sHp7WyDrF4MJV74_6FY2xiiTN3FPQp-DXI64ePJi6bNY3Xm89cg5iKFBEp51br0BT48BQvy9fwe2y_3OQpT1VYewInNwDHb0wviO7wvPFD44kBmLapA6bS8a_ukXkvWXl8plihdE3Oa5YzaABaK28kFvcQd2S3TmVhiySbYtoyA91eSaTsDx2Xh8odjcrZMYHMJii7LekQOaei2a6w-uX356po7D3jWcKCa5mRgbA2qvQooJCVBXPKTuljyXuSX1GWHbseMWsLQZHf_L4uUATR-6_3XfwHNxY0qYM5AFhf01udQR8zMR39NF2OP13HfVv4b3VerXwjlPlKR5dRMO2q-P_gfJvk1vg
+
+@AUTH = Bearer CfDJ8GhKtuGWlh9LrwdtrextRL6AkaJ_zijeMnZpWZvvzMdL6GVqkoOqHznuCNdov1MHqnu72URnuDIAh421_vbycde_MahVGXEI0jsoLCvQXEPtGrZIklz9mmUdGu_K2brQFKGLbhcqZQYpqbsTfvdlyM7HQqTL7iSZrDq4uSZtp-sOSlyi0nCUulmiIelo04KhTWpmx4vQJ6rosUq5TnjWCjvgBDzwvHWBBWj_I1xrwtGbm_Vtia7cFcA7nWJMvQSjdyI2HQ8tzLJS1KctP5W4KtvKv1xi2g8KZ3HwdUDXg-7kZO0HwBOA5jY46Hrnb2xHdmOx2Q5sRGoevTi5YBAOy4Ros9dELJl8LfSuVtOVZtZ5qzNr_kVJVzDWYVM-AWnupJYcwodTMXntU2YfLjleojBjc0TkYTKZk-wcvMsXQS7aQMSq5E0BDpEElnuvjd9sbSHP4_0z4gw_VLblgQCIkAetKrsKdxpzKff0gBsoy6UuwN9R-KnqPASZNZU-yvX8pjytxh4gcEH8QnG_kH3tJHHC0xY6FSag7pqux95SazaTfehSpeKX5R7gzCBGvjn7s6lfs14XtTn2rn-d4NF--QN3pOiwpVr8GwnTBQgLWze17liLiOrOQU8OiIRdwwORfehYKzr87JqG6Dkyfo8gexuEajbH2O44uvDvrxiheFPU9vzUVuDU_cX0M61p-a9IMyAdxAiHSiHHvmWXG5BWdCk
+
+POST {{SUIA.API_HostAddress}}/api/identity/login
+Content-Type: application/json
+
+{
+  "email": "admin@sysinfocus.com",
+  "password": "Test1234$"
+}
+
+###
+GET {{SUIA.API_HostAddress}}/api/user/claims
+Authorization: {{AUTH}}
+
+###
+GET {{SUIA.API_HostAddress}}/api/identity/manage/info
+Authorization: {{AUTH}}
+
+###
+GET {{SUIA.API_HostAddress}}/api/users
+Authorization: {{AUTH}}
+
+###
+POST {{SUIA.API_HostAddress}}/api/identity/refresh
+Content-Type: application/json
+Authorization: {{AUTH}}
+
+{
+  "refreshToken": "{{REFRESHTOKEN}}"
+}
+
+###
+POST {{SUIA.API_HostAddress}}/api/identity/forgotPassword
+Content-Type: application/json
+
+{
+  "email": "rahulah@gmail.com"
+}

@@ -1,0 +1,18 @@
+﻿<AlertDialog Show>
+    <Header>
+        Delete user?
+    </Header>
+    <Content>
+        This action cannot be undone. This will permanently delete from the database.
+    </Content>
+    <Footer>
+        <Button Text="Cancel" Type="ButtonType.Outline" OnClick="OnCancel" />
+        <Button Text="Continue" Type="ButtonType.Destructive" OnClick="OnConfirm" />
+    </Footer>
+</AlertDialog>
+
+@code
+{
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback OnConfirm { get; set; }
+}

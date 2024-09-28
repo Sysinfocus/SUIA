@@ -1,0 +1,54 @@
+﻿@inject IAPIService api
+
+@if (Show && model is not null)
+{
+    <Sheet @ref="@sheet" Show="@Show">
+        <div class="flex-col jcsb" style="height: 100%; width: 100%">
+            <div class="flex-col" style="flex: 1">
+                <div class="flex-col g4 mb1">
+                    <h3>Add Role</h3>
+                    <small class="muted-color">Create new role for users to be assigned later.</small>
+                </div>
+                <Input Focus Label="Name" @bind-Value="@model.Name" />
+                <Input Label="Normalized Name" ReadOnly Value="@model.NormalizedName" />
+            </div>
+            @if (errorMessage is not null)
+            {
+                <Alert Title="Update failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
+            }
+            <div class="flex g4 jce aic">
+                <Button Text="Add" OnClick="HandleAdd" />
+                <Button Text="Discard" Type="ButtonType.Ghost" OnClick="HandleDiscard" />
+            </div>
+        </div>
+    </Sheet>
+}
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public EventCallback OnAdd { get; set; }
+    [Parameter] public EventCallback OnDiscard { get; set; }
+
+    private RoleModel? model = new() { ConcurrencyStamp = Guid.NewGuid().ToString() };
+    private Sheet sheet = new();
+    private string? errorMessage;
+
+    private async Task HandleAdd()
+    {
+        errorMessage = null;
+        if (model is null) return;
+        var result = await api.PostAsync<RoleModel, RoleModel>(EndpointConstants.POST_ROLE, model);
+        if (!result.IsSuccess)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+        await sheet.Close();
+        await OnAdd.InvokeAsync();
+    }
+
+    private async Task HandleDiscard()
+    {        
+        await sheet.Close();
+        await OnDiscard.InvokeAsync();
+    }
+}

@@ -1,0 +1,66 @@
+﻿@inject IAPIService api
+
+@if (Show && model is not null)
+{
+    <Sheet @ref="@sheet" Show="@Show">
+        <div class="flex-col jcsb" style="height: 100%; width: 100%">
+            <div class="flex-col" style="flex: 1">
+                <div class="flex-col g4 mb1">
+                    <h3>Update Role</h3>
+                    <small class="muted-color">Update role for users to be assigned later.</small>
+                </div>
+                <Input Focus Label="Name" @bind-Value="@model.Name" />
+                <Input Label="Normalized Name" ReadOnly Value="@model.NormalizedName" />               
+            </div>
+            @if (errorMessage is not null)
+            {
+                <Alert Title="Update failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
+            }
+            <div class="flex g4 jce aic">
+                <Button Text="Update" OnClick="HandleUpdate" />
+                <Button Text="Cancel" Type="ButtonType.Ghost" OnClick="HandleCancel" />
+            </div>
+        </div>
+    </Sheet>
+}
+@code {
+    [Parameter] public bool Show { get; set; }
+    [Parameter] public string? Id { get; set; }
+    [Parameter] public EventCallback OnUpdate { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+
+    private RoleModel? model;
+    private Sheet sheet = new();
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var result = await api.GetAsync<RoleModel>(string.Format(EndpointConstants.GET_ROLE, Id));
+        if (!result.IsSuccess)
+        {
+            await HandleCancel();
+            return;
+        }
+        model = result.Data;
+    }
+
+    private async Task HandleUpdate()
+    {
+        errorMessage = null;
+        if (model is null) return;
+        var result = await api.PutAsync<RoleModel, IEmpty>(string.Format(EndpointConstants.GET_ROLE, Id), model);
+        if (!result.IsSuccess)
+        {
+            errorMessage = result.Message;
+            return;
+        }
+        await sheet.Close();
+        await OnUpdate.InvokeAsync();
+    }
+
+    private async Task HandleCancel()
+    {        
+        await sheet.Close();
+        await OnCancel.InvokeAsync();
+    }
+}

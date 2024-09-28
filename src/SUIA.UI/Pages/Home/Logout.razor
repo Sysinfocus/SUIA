@@ -1,0 +1,15 @@
+@page "/Logout"
+@inject AuthenticationStateProvider asp
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        try {
+            await ((SUIAAuthenticationStateProvider)asp).Logout();
+        }
+        finally {
+            be.Goto("Login");
+        }
+    }
+}

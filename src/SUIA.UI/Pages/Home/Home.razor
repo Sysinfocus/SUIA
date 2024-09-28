@@ -1,0 +1,16 @@
+﻿@page "/Home"
+@using System.Security.Claims
+
+<h3>Home</h3>
+
+<AuthorizeView>
+    <br/>
+    Welcome your claim details:
+    <Separator Class="mtb1" />
+    <div style="line-height: 1.5rem">
+        Id: <b>@context.User.Claims.FirstOrDefault(a => a.Type == ClaimTypes.NameIdentifier)?.Value</b><br/>
+        Username: <b>@context.User.Claims.FirstOrDefault(a => a.Type == ClaimTypes.Name)?.Value</b><br />
+        Email: <b>@context.User.Claims.FirstOrDefault(a => a.Type == ClaimTypes.Email)?.Value</b><br />
+        Role: <b>@context.User.Claims.FirstOrDefault(a => a.Type == ClaimTypes.Role)?.Value</b>
+    </div>
+</AuthorizeView>

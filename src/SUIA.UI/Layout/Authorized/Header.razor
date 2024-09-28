@@ -1,0 +1,113 @@
+@inject Initialization init
+@inject AuthenticationStateProvider asp
+
+<style>
+    a {
+        color: var(--primary-fg)
+    }
+
+    .logo {
+        line-height: 0;
+        transition: 300ms ease-in-out;
+        margin-left: 0.5rem;
+        margin-right: 0.25rem;
+    }
+
+        .logo:hover, a:hover {
+            opacity: 0.75
+        }
+
+    header {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        height: 40px;
+        position: sticky;        
+        top: 0;
+        align-items: center;
+        padding: 1rem;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        z-index: 1;
+    }
+    .light header {
+        background: #09097966;
+    }
+    .dark header {
+        background: #09097966;
+    }
+
+    .brand {
+        display: flex;
+        gap: 0;
+        align-items: center;
+    }
+
+        .brand .name {
+            font-weight: bold
+        }
+
+    .settings {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+</style>
+
+<header>
+    <div class="brand">
+        <Icon Name="@(!ShowMenu ? "apps" : "close")" Style="cursor: pointer" OnClick="HandleMenuToggle" />
+        <div class="logo">
+            <Icon Name="crowdsource" Color="red" Style="cursor: default" />
+        </div>
+        <a href="." class="name">YOUR COMPANY NAME</a>
+    </div>
+    <div class="settings">
+        <Icon Name="@(init.CurrentTheme == "light" ? "dark_mode" : "light_mode")" Size="18px" Style="cursor: pointer" OnClick="init.ToggleTheme" Tooltip="Toggle Theme" />
+        <Avatar Name="Your Name" Size="AvatarSize.Tiny" ImageUrl="https://th.bing.com/th/id/OIP.IGNf7GuQaCqz_RPq5wCkPgHaLH?w=131&h=196&c=7&r=0&o=5&dpr=1.3&pid=1.7"
+                OnClick="() => showContextMenu = !showContextMenu" />
+        @* <Icon Name="logout" Size="18px" Style="cursor: pointer" Tooltip="Logout" OnClick="((SUIAAuthenticationStateProvider)asp).Logout" /> *@
+    </div>
+</header>
+
+@if (showContextMenu)
+{
+    <div style="position: absolute; right: 16px; top: 30px; display: flex; flex-direction: column; align-items: flex-end; z-index: 2">
+        <Icon Name="arrow_drop_up" />
+        <MenuGroup Items="@menuItems" Show="@showContextMenu" OnSelect="HandleContextMenuSelection" Style="max-width: max-content; margin-top: 14px" />
+    </div>
+}
+
+@code
+{
+    [Parameter] public bool ShowMenu { get; set; }
+    [Parameter] public EventCallback<bool> OnMenuToggle { get; set; }
+
+    private List<MenuItemOption> menuItems = [];
+    private bool showContextMenu;
+
+    protected override void OnInitialized()
+    {
+        menuItems.Add(new MenuItemOption("Change Password"));
+        menuItems.Add(new MenuItemOption("Manage Profile"));
+        menuItems.Add(new MenuItemOption("Activity Log"));
+        menuItems.Add(new MenuItemOption(""));
+        menuItems.Add(new MenuItemOption("Logout"));
+    }
+
+    private async Task HandleContextMenuSelection(MenuItemOption menu)
+    {
+        if (menu.Text == "Change Password") be.Goto("User/ChangePassword");
+        else if (menu.Text == "Manage Profile") be.Goto("User/ManageProfile");
+        else if (menu.Text == "Activity Log") be.Goto("User/ActivityLog");
+        else if (menu.Text == "Logout") await ((SUIAAuthenticationStateProvider)asp).Logout();
+        showContextMenu = false;
+    }
+
+    private async Task HandleMenuToggle()
+    {
+        ShowMenu = !ShowMenu;
+        await OnMenuToggle.InvokeAsync(ShowMenu);
+    }
+}

@@ -1,0 +1,27 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <CascadingAuthenticationState>
+        <AuthorizeView>
+            <Authorized>
+                <AuthorizeRouteView RouteData="@routeData" />
+            </Authorized>            
+            <NotAuthorized>                
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.NotAuthorized.EmptyLayout)" />
+                @{
+                    var currentUrl = be.GetUrl().Replace(be.GetBaseUrl(), "").ToLower();                    
+                    if (currentUrl == "" || currentUrl.StartsWith("login") || currentUrl.StartsWith("register")) return;
+                    be.Goto("");
+                }
+            </NotAuthorized>
+        </AuthorizeView>                
+        </CascadingAuthenticationState>
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(Layout.Authorized.MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

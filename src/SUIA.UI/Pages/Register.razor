@@ -1,0 +1,80 @@
+﻿@layout Layout.NotAuthorized.EmptyLayout
+@inject IAPIService api
+@page "/Register"
+
+<div style="display: flex; flex-direction: column; height: calc(100vh - 90px); place-content: center">
+    <div style="display: flex; flex-direction: column; align-items: center">
+        <Card Style="width: 100%; max-width: 350px; max-height: fit-content">
+            <CardHeader>
+                <div class="flex-col g8">
+                    <h2>Register</h2>
+                    <p>Enter your valid details to register.</p>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <CascadingValue Value="errors">
+                    <div class="flex-col">
+                        <Input Focus Id="userEmail" Type="text" Label="Email" @bind-Value="@model.Email" Placeholder="yourname@domain.com" Error="Email" />
+                        <Input Type="password" Label="Password" @bind-Value="@model.Password" placeholder="password" Error="Password" />
+                        <Input Type="password" Label="Confirm Password" @bind-Value="@model.ConfirmPassword" placeholder="password" Error="ConfirmPassword" />
+                    </div>
+                </CascadingValue>
+                @if (message is not null)
+                {
+                    <Alert Title="" Description="@message" Icon="error" Type="AlertType.Destructive" />
+                }
+            </CardContent>
+            <CardFooter>
+                <div class="flex-col" style="width: 100%; padding: 1.5rem">
+                    <div class="flex jcc">
+                        <Button Icon="how_to_reg" Text="Register" OnClick="HandleRegister" />
+                        <Button Icon="refresh" Text="Reset" Type="ButtonType.Secondary" OnClick="HandleReset" />
+                    </div>
+                    <div class="flex-col aic" style="width: 100%">
+                        <Separator />
+                        <small>Already have an account?</small>
+                        <Button Icon="login" Text="Login" Type="ButtonType.Secondary" OnClick='() => be.Goto("Login")' />
+                    </div>
+                </div>
+            </CardFooter>
+        </Card>
+        <small class="muted mt1">&copy; 2024, Your Company Name.</small>
+    </div>
+</div>
+
+
+@code
+{
+    private string? message;
+    private Dictionary<string, string>? errors;
+    private RegisterRequest model = new();
+
+    private async Task HandleRegister()
+    {
+        message = null;
+        errors = [];
+        if (string.IsNullOrWhiteSpace(model.Email)) errors.TryAdd("Email", "Valid Email address is required.");
+        if (string.IsNullOrWhiteSpace(model.Password)) errors.TryAdd("Password", "Password is required.");
+        else if (model.Password?.Length < 8 || model.Password?.Length > 20) errors.TryAdd("Password", "Password should be between 8 and 20 chars.");
+        if (model.Password != model.ConfirmPassword) errors.TryAdd("ConfirmPassword", "Password and Confirm Password should match.");
+        if (errors.Count > 0) return;
+
+        var result = await api.PostAsync<RegisterRequest>(EndpointConstants.REGISTER, model);
+        if (result.IsSuccess)
+        {
+            be.Goto("Login");
+        }
+        else
+        {
+            message = result.Message;
+        }
+    }
+
+    private async Task HandleReset()
+    {
+        message = null;
+        errors = [];
+        model = new();
+        await be.SetFocus("#userEmail");
+    }
+}

@@ -396,3 +396,6 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/src/SUIA.API/identity.db
+/src/SUIA.API/Migrations
+/src/.vscode

@@ -1,0 +1,93 @@
+﻿@layout Layout.NotAuthorized.EmptyLayout
+@inject AuthenticationStateProvider asp
+@inject IAPIService api
+@page "/"
+@page "/Login"
+
+<style>
+    .sbc-card-content { height: fit-content }
+</style>
+
+<div style="display: flex; flex-direction: column; height: calc(100vh - 90px); place-content: center">
+    <div style="display: flex; flex-direction: column; align-items: center">
+        <Card Style="width: 100%; max-width: 350px; max-height: fit-content">
+            <CardHeader>
+                <div class="flex-col g8">
+                    <h2>User Login</h2>
+                    <p>Enter your valid credentials to proceed.</p>
+                </div>
+            </CardHeader>
+            <CardContent>
+                <CascadingValue Value="errors">
+                    <div class="flex-col">
+                        <Input Focus Id="userEmail" Type="text" Label="Email" @bind-Value="@model.Email" Placeholder="yourname@domain.com" Error="Email" />
+                        <Input Type="password" Label="Password" @bind-Value="@model.Password" placeholder="password" Error="Password" />
+                    </div>
+                </CascadingValue>
+                @if (message is not null)
+                {
+                    <Alert Title="" Description="@message" Icon="error" Type="AlertType.Destructive" />
+                }
+            </CardContent>
+            <CardFooter>
+                <div class="flex-col" style="width: 100%; padding: 1.5rem">
+                    <div class="flex jcc">
+                        <Button Icon="login" Text="Login" OnClick="HandleLogin" />
+                        <Button Icon="refresh" Text="Reset" Type="ButtonType.Secondary" OnClick="HandleReset" />
+                    </div>
+                    <div class="flex-col aic" style="width: 100%">
+                        <Separator />
+                        <small>Don't have an account?</small>
+                        <Button Icon="how_to_reg" Text="Register Account" Type="ButtonType.Secondary" OnClick='() => be.Goto("Register")' />
+                    </div>
+                </div>
+            </CardFooter>
+        </Card>
+        <small class="muted mt1">&copy; 2024, Your Company Name.</small>
+    </div>
+</div>
+
+
+@code
+{
+    private string? message;
+    private Dictionary<string, string>? errors;
+    private LoginRequest model = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = await ((SUIAAuthenticationStateProvider)asp).GetAuthenticationStateAsync();
+        if (user is not null && user.User.Identity?.IsAuthenticated == true)
+            be.Goto("Home");
+        else
+            await be.RemoveFromLocalStorage("session");
+    }
+
+    private async Task HandleLogin()
+    {
+        message = null;
+        errors = [];
+        if (string.IsNullOrWhiteSpace(model.Email)) errors.TryAdd("Email", "Valid Email address is required.");
+        if (string.IsNullOrWhiteSpace(model.Password)) errors.TryAdd("Password", "Password is required.");
+        else if (model.Password?.Length < 8 || model.Password?.Length > 20) errors.TryAdd("Password", "Password should be between 8 and 20 chars.");
+        if (errors.Count > 0) return;
+
+        var result = await api.PostAsync<LoginRequest, LoginResponse>(EndpointConstants.LOGIN, model);
+        if (result.IsSuccess)
+        {            
+            await ((SUIAAuthenticationStateProvider)asp).Login(result.Data!);
+        }
+        else
+        {
+            message = "Invalid email and/or password.";
+        }
+    }
+
+    private async Task HandleReset()
+    {
+        message = null;
+        errors = [];
+        model = new();
+        await be.SetFocus("#userEmail");
+    }
+}
