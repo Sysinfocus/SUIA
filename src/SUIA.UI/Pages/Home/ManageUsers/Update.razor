@@ -33,13 +33,13 @@
     [Parameter] public EventCallback OnUpdate { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    private UserModel? model;
+    private UserDto? model;
     private Sheet sheet = new();
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await api.GetAsync<UserModel>(string.Format(EndpointConstants.GET_USER, Id));
+        var result = await api.GetAsync<UserDto>(string.Format(EndpointConstants.GET_USER, Id));
         if (!result.IsSuccess)
         {
             await HandleCancel();
@@ -52,7 +52,7 @@
     {
         errorMessage = null;
         if (model is null) return;
-        var result = await api.PutAsync<UserModel, IEmpty>(string.Format(EndpointConstants.GET_USER, Id), model);
+        var result = await api.PutAsync<UserDto, IEmpty>(string.Format(EndpointConstants.GET_USER, Id), model);
         if (!result.IsSuccess)
         {
             errorMessage = result.Message;

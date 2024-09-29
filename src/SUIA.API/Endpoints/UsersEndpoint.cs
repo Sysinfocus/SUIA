@@ -42,13 +42,13 @@ public sealed class UsersEndpoint : IEndpoints
     {
         var validUser = await userManager.GetUserAsync(user);
         if (validUser is null) return Results.Unauthorized();
-        var claims = new UserClaimsModel
-        {
-            Id = validUser.Id,
-            UserName = validUser.UserName!,
-            Email = validUser.Email!,
-            Roles = validUser.Email == "admin@sysinfocus.com" ? "Admin" : "User",
-        };
+
+        var claims = new UserClaimsDto(
+            validUser.Id,
+            validUser.UserName!,
+            validUser.Email!,
+            validUser.Email!.StartsWith("admin@") ? "Admin" : "User");        
+
         var toBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(claims.ToJson()));
         return Results.Ok(toBase64);
     }
@@ -64,7 +64,7 @@ public sealed class UsersEndpoint : IEndpoints
         await Task.CompletedTask;
     }
 
-    private async Task<IResult> UpdateUser(string id, UserModel model, ApplicationDbContext adbc, CancellationToken cancellationToken)
+    private async Task<IResult> UpdateUser(string id, UserDto model, ApplicationDbContext adbc, CancellationToken cancellationToken)
     {
         var existingUser = await adbc.Users.FindAsync([id], cancellationToken: cancellationToken);
         if (existingUser is null) return Results.NotFound();
@@ -77,7 +77,7 @@ public sealed class UsersEndpoint : IEndpoints
         return Results.NoContent();
     }
 
-    private async Task<IResult> UpdatePassword(string id, ChangePasswordRequest request, ApplicationDbContext adbc, UserManager<IdentityUser> userManager, CancellationToken cancellationToken)
+    private async Task<IResult> UpdatePassword(string id, ChangePasswordRequestDto request, ApplicationDbContext adbc, UserManager<IdentityUser> userManager, CancellationToken cancellationToken)
     {
         var user = await adbc.Users.FindAsync([id], cancellationToken: cancellationToken);
         if (user is null) return Results.NotFound();        

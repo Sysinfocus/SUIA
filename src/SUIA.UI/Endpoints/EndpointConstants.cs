@@ -6,6 +6,7 @@ public class EndpointConstants
     public const string REGISTER = "api/identity/register";
     public const string LOGIN = "api/identity/login";
     public const string REFRESH_TOKEN = "api/identity/refresh";
+    public const string GET_INFO = "api/identity/manage/info";
 
     // Users
     public const string LOGOUT = "api/users/logout";

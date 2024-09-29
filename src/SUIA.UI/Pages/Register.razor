@@ -21,7 +21,7 @@
                 </CascadingValue>
                 @if (message is not null)
                 {
-                    <Alert Title="" Description="@message" Icon="error" Type="AlertType.Destructive" />
+                    <Alert Title="@title" Description="@message" Icon="error" Type="AlertType.Destructive" />
                 }
             </CardContent>
             <CardFooter>
@@ -45,28 +45,24 @@
 
 @code
 {
-    private string? message;
+    private string? title, message;
     private Dictionary<string, string>? errors;
-    private RegisterRequest model = new();
+    private RegisterRequestDto model = new();
 
     private async Task HandleRegister()
     {
-        message = null;
-        errors = [];
-        if (string.IsNullOrWhiteSpace(model.Email)) errors.TryAdd("Email", "Valid Email address is required.");
-        if (string.IsNullOrWhiteSpace(model.Password)) errors.TryAdd("Password", "Password is required.");
-        else if (model.Password?.Length < 8 || model.Password?.Length > 20) errors.TryAdd("Password", "Password should be between 8 and 20 chars.");
-        if (model.Password != model.ConfirmPassword) errors.TryAdd("ConfirmPassword", "Password and Confirm Password should match.");
-        if (errors.Count > 0) return;
-
-        var result = await api.PostAsync<RegisterRequest>(EndpointConstants.REGISTER, model);
+        title = message = null;
+        errors = model.GetErrors();
+        if (!model.IsValid()) return;
+        var result = await api.PostAsync<RegisterRequestDto, IEmpty>(EndpointConstants.REGISTER, model);
         if (result.IsSuccess)
         {
             be.Goto("Login");
         }
         else
         {
-            message = result.Message;
+            title = result.Errors.Title;
+            message = result.Errors.Errors.First().Value[0];
         }
     }
 

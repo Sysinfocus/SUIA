@@ -29,13 +29,13 @@
     [Parameter] public EventCallback OnUpdate { get; set; }
     [Parameter] public EventCallback OnCancel { get; set; }
 
-    private RoleModel? model;
+    private RolesDto? model;
     private Sheet sheet = new();
     private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        var result = await api.GetAsync<RoleModel>(string.Format(EndpointConstants.GET_ROLE, Id));
+        var result = await api.GetAsync<RolesDto>(string.Format(EndpointConstants.GET_ROLE, Id));
         if (!result.IsSuccess)
         {
             await HandleCancel();
@@ -48,7 +48,7 @@
     {
         errorMessage = null;
         if (model is null) return;
-        var result = await api.PutAsync<RoleModel, IEmpty>(string.Format(EndpointConstants.GET_ROLE, Id), model);
+        var result = await api.PutAsync<RolesDto, IEmpty>(string.Format(EndpointConstants.GET_ROLE, Id), model);
         if (!result.IsSuccess)
         {
             errorMessage = result.Message;

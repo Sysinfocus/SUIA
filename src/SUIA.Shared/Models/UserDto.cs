@@ -1,5 +1,5 @@
 ﻿namespace SUIA.Shared.Models;
-public sealed class UserModel
+public sealed class UserDto
 {
     public string Id { get; set; } = default!;
     public string Username { get; set; } = default!;

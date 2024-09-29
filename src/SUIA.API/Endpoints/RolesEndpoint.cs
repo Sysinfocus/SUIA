@@ -33,15 +33,16 @@ public sealed class RolesEndpoint : IEndpoints
         return Results.Ok(existingRole);
     }
 
-    private async Task<IResult> CreateRole(RoleModel model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> CreateRole(RolesDto model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
     {
         var role = new IdentityRole(model.Name);
+        role.ConcurrencyStamp = Guid.NewGuid().ToString();
         var result = await roleManager.CreateAsync(role);
         if (result.Errors.Any()) return Results.Problem(result.Errors.First().Description, null, 400, "Failed to create role.");
         return Results.Ok(result);
     }
 
-    private async Task<IResult> UpdateRole(string id, RoleModel model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> UpdateRole(string id, RolesDto model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
     {
         var existingRole = await roleManager.FindByIdAsync(id);
         if (existingRole is null) return Results.NotFound();

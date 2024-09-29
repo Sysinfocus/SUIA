@@ -7,24 +7,53 @@
     <div class="flex-col">
         @if (pagedData is not null)
         {
-            <DataTable Items="@pagedData" TItem="UserModel" Height="calc(100vh - 190px)">
+            <DataTable Items="@pagedData" TItem="UserDto" Height="calc(100vh - 190px)">
                 <DataColumns>
-                    <DataTableColumn Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
+                    <DataTableColumn Freeze="0" Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
                         <Template>
                             <div class="flex jcc aic">
-                                @if (!context.Username.StartsWith("admin@")) {
+                                @if (!context.Username.StartsWith("admin@"))
+                                {
                                     <Icon Name="delete" Tooltip="Delete" Size="18px" Color="red" OnClick="() => HandleDelete(context)" />
                                 }
                                 <Icon Name="edit" Tooltip="Edit" Size="18px" Color="royalblue" OnClick="() => HandleEdit(context)" />
                             </div>
                         </Template>
                     </DataTableColumn>
-                    <DataTableColumn Property="d => d.Username" Header="Username" SortOn="@_sortModel" OnSort="HandleSorting" />
+                    <DataTableColumn Freeze="75px" Property="d => d.Username" Header="Username" SortOn="@_sortModel" OnSort="HandleSorting" />
                     <DataTableColumn Property="d => d.Email" Header="Email" SortOn="@_sortModel" OnSort="HandleSorting" />
-                    <DataTableColumn Property="d => d.EmailConfirmed" Header="Email Confirmed" />
-                    <DataTableColumn Property="d => d.PhoneNumberConfirmed" Header="Phone Confirmed" />
-                    <DataTableColumn Property="d => d.TwoFactorEnabled" Header="2FA?" />
-                    <DataTableColumn Property="d => d.LockoutEnabled" Header="Lockout" />
+                    <DataTableColumn Property="d => d.EmailConfirmed" Header="Email Confirmed">
+                        <Template>
+                            @if (context.EmailConfirmed)
+                            {
+                                <Icon Name="check" Size="20px" />
+                            }
+                        </Template>
+                    </DataTableColumn>
+                    <DataTableColumn Property="d => d.PhoneNumberConfirmed" Header="Phone Confirmed">
+                        <Template>
+                            @if (context.PhoneNumberConfirmed)
+                            {
+                                <Icon Name="check" Size="20px" />
+                            }
+                        </Template>
+                    </DataTableColumn>
+                    <DataTableColumn Property="d => d.TwoFactorEnabled" Header="2FA?">
+                        <Template>
+                            @if (context.TwoFactorEnabled)
+                            {
+                                <Icon Name="check" Size="20px" />
+                            }
+                        </Template>
+                    </DataTableColumn>
+                    <DataTableColumn Property="d => d.LockoutEnabled" Header="Lockout">
+                        <Template>
+                            @if (context.LockoutEnabled)
+                            {
+                                <Icon Name="check" Size="20px" />
+                            }
+                        </Template>
+                    </DataTableColumn>
                     <DataTableColumn Property="d => d.AccessFailedCount" Header="Failed Count" />
                 </DataColumns>
             </DataTable>
@@ -77,13 +106,13 @@ else if (showDelete)
 
 @code
 {
-    private List<UserModel>? data;
-    private IEnumerable<UserModel>? pagedData;
+    private List<UserDto>? data;
+    private IEnumerable<UserDto>? pagedData;
     private SortModel _sortModel = new() { Header = "ID", IsAscending = true };
     private PaginationState paging = new() { CurrentPage = 1, TotalRecords = 0 };
     private string? message;
     private bool showUpdate, showDelete, showToast;
-    private UserModel? updateModel;
+    private UserDto? updateModel;
 
     protected override async Task OnInitializedAsync()
     {
@@ -92,7 +121,7 @@ else if (showDelete)
 
     private async Task LoadDataAsync()
     {
-        var result = await api.GetAsync<List<UserModel>>(EndpointConstants.GET_USERS);
+        var result = await api.GetAsync<List<UserDto>>(EndpointConstants.GET_USERS);
         if (result.IsSuccess)
         {
             data = result.Data;
@@ -108,13 +137,13 @@ else if (showDelete)
         }
     }
 
-    private void HandleDelete(UserModel dataItem)
+    private void HandleDelete(UserDto dataItem)
     {
         updateModel = dataItem;
         showDelete = true;
     }
 
-    private void HandleEdit(UserModel dataItem)
+    private void HandleEdit(UserDto dataItem)
     {
         updateModel = dataItem;
         showUpdate = true;

@@ -13,14 +13,15 @@ public class SUIAAuthenticationStateProvider(BrowserExtensions browserExtensions
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
         var identity = new ClaimsIdentity();
-        var session = await browserExtensions.GetFromLocalStorage("session");
+        var session = await browserExtensions.GetFromLocalStorage("session", null);
         if (session is null)
         {            
             return new AuthenticationState(new ClaimsPrincipal(identity));
         }
-
         var userClaims = session.FromRawClaims();
         if (userClaims is null) return new AuthenticationState(new ClaimsPrincipal(identity));
+
+        if (await ValidateUser() == false) return new AuthenticationState(new ClaimsPrincipal(identity));
 
         identity = new ClaimsIdentity(
         [
@@ -36,7 +37,13 @@ public class SUIAAuthenticationStateProvider(BrowserExtensions browserExtensions
         return new AuthenticationState(user);
     }
 
-    public async Task Login(LoginResponse model)
+    private async ValueTask<bool> ValidateUser()
+    {
+        var result = await api.GetAsync<UserInfoDto>(EndpointConstants.GET_INFO);
+        return result.StatusCode != System.Net.HttpStatusCode.Unauthorized;
+    }
+
+    public async Task Login(LoginResponseDto model)
     {
         if (model is null) return;
         await browserExtensions.SetToLocalStorage("session", model.ToJson());
@@ -48,7 +55,7 @@ public class SUIAAuthenticationStateProvider(BrowserExtensions browserExtensions
         await browserExtensions.SetToLocalStorage("session", model.ToJson());
         NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         browserExtensions.Goto("/Home");
-    }
+    }  
 
     public async Task Logout()
     {

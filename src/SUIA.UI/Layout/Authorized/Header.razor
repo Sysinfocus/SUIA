@@ -96,12 +96,12 @@
         menuItems.Add(new MenuItemOption("Logout"));
     }
 
-    private async Task HandleContextMenuSelection(MenuItemOption menu)
+    private void HandleContextMenuSelection(MenuItemOption menu)
     {
         if (menu.Text == "Change Password") be.Goto("User/ChangePassword");
         else if (menu.Text == "Manage Profile") be.Goto("User/ManageProfile");
         else if (menu.Text == "Activity Log") be.Goto("User/ActivityLog");
-        else if (menu.Text == "Logout") await ((SUIAAuthenticationStateProvider)asp).Logout();
+        else if (menu.Text == "Logout") be.Goto("Logout");
         showContextMenu = false;
     }
 

@@ -6,10 +6,18 @@
     protected override async Task OnInitializedAsync()
     {
         try {
-            await ((SUIAAuthenticationStateProvider)asp).Logout();
+            var currentUrl = be.GetUrl().Replace(be.GetBaseUrl(), "").ToLower();
+            if (currentUrl == "" || currentUrl.StartsWith("login"))
+            {
+
+            }
+            else
+            {
+                await ((SUIAAuthenticationStateProvider)asp).Logout();
+            }
         }
         finally {
-            be.Goto("Login");
+            be.Goto("Login", true);
         }
     }
 }

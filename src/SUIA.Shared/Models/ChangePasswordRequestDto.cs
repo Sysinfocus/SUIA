@@ -1,6 +1,6 @@
 ﻿namespace SUIA.Shared.Models;
 
-public class ChangePasswordRequest
+public class ChangePasswordRequestDto
 {
     public string Id { get; set; } = default!;
     public string Email { get; set; } = default!;

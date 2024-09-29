@@ -5,7 +5,6 @@ using SUIA.API.Data;
 using SUIA.API.Endpoints;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOpenApi();
 builder.Services.AddCors();
 builder.Services.AddAuthorization();
 
@@ -14,7 +13,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(o
 
 builder.Services.AddIdentityApiEndpoints<IdentityUser>()
     .AddRoles<IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();    
+    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 builder.Services.AddProblemDetails();
 
@@ -23,7 +22,6 @@ builder.Services.AddEndpoints();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
     app.MapScalarApiReference();
 }
 

@@ -14,8 +14,12 @@ builder.RootComponents.Add<HeadOutlet>("head::after");
 var client = new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) };
 var settings = await client.GetFromJsonAsync<Settings>("appsettings.json");
 
-
-builder.Services.AddScoped(sp => client);
+builder.Services.AddTransient(_ => client);
+//builder.Services.AddTransient<HttpDelegatingHandler>();
+//builder.Services.AddHttpClient().ConfigureHttpClientDefaults(o =>
+//{
+//    //o.AddHttpMessageHandler(d => d.GetService<HttpDelegatingHandler>()!);
+//});
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, SUIAAuthenticationStateProvider>();
 builder.Services.AddTransient<IAPIService, APIService>();

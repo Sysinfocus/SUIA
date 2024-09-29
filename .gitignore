@@ -399,3 +399,4 @@ FodyWeavers.xsd
 /src/SUIA.API/identity.db
 /src/SUIA.API/Migrations
 /src/.vscode
+/src/SUIA.API/SUIA.API.http

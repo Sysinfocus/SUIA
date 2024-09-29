@@ -52,7 +52,7 @@
 {
     private string? message;
     private Dictionary<string, string>? errors;
-    private LoginRequest model = new();
+    private LoginRequestDto model = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -66,13 +66,9 @@
     private async Task HandleLogin()
     {
         message = null;
-        errors = [];
-        if (string.IsNullOrWhiteSpace(model.Email)) errors.TryAdd("Email", "Valid Email address is required.");
-        if (string.IsNullOrWhiteSpace(model.Password)) errors.TryAdd("Password", "Password is required.");
-        else if (model.Password?.Length < 8 || model.Password?.Length > 20) errors.TryAdd("Password", "Password should be between 8 and 20 chars.");
-        if (errors.Count > 0) return;
-
-        var result = await api.PostAsync<LoginRequest, LoginResponse>(EndpointConstants.LOGIN, model);
+        errors = model.GetErrors();
+        if (!model.IsValid()) return;
+        var result = await api.PostAsync<LoginRequestDto, LoginResponseDto>(EndpointConstants.LOGIN, model);
         if (result.IsSuccess)
         {            
             await ((SUIAAuthenticationStateProvider)asp).Login(result.Data!);

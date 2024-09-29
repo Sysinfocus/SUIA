@@ -10,9 +10,9 @@
     <div class="flex-col">
         @if (pagedData is not null)
         {
-            <DataTable Items="@pagedData" TItem="RoleModel" Height="calc(100vh - 190px)">
+            <DataTable Items="@pagedData" TItem="RolesDto" Height="calc(100vh - 190px)">
                 <DataColumns>
-                    <DataTableColumn Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
+                    <DataTableColumn Freeze="0px" Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
                         <Template>
                             <div class="flex jcc aic">
                                 <Icon Name="delete" Tooltip="Delete" Size="18px" Color="red" OnClick="() => HandleDelete(context)" />
@@ -20,7 +20,7 @@
                             </div>
                         </Template>
                     </DataTableColumn>
-                    <DataTableColumn Property="d => d.Name" Header="Name" SortOn="@_sortModel" OnSort="HandleSorting" />
+                    <DataTableColumn Freeze="75px" Property="d => d.Name" Header="Name" SortOn="@_sortModel" OnSort="HandleSorting" />
                     <DataTableColumn Property="d => d.NormalizedName" Header="Normalized Name" SortOn="@_sortModel" OnSort="HandleSorting" />
                     <DataTableColumn Property="d => d.ConcurrencyStamp" Header="Concurrency Stamp" SortOn="@_sortModel" OnSort="HandleSorting" />
                 </DataColumns>
@@ -78,13 +78,13 @@ else if (showDelete)
 
 @code
 {
-    private List<RoleModel>? data;
-    private IEnumerable<RoleModel>? pagedData;
+    private List<RolesDto>? data;
+    private IEnumerable<RolesDto>? pagedData;
     private SortModel _sortModel = new() { Header = "ID", IsAscending = true };
     private PaginationState paging = new() { CurrentPage = 1, TotalRecords = 0 };
     private string? message;
     private bool showAdd, showUpdate, showDelete, showToast;
-    private RoleModel? updateModel;
+    private RolesDto? updateModel;
 
     protected override async Task OnInitializedAsync()
     {
@@ -93,7 +93,7 @@ else if (showDelete)
 
     private async Task LoadDataAsync()
     {
-        var result = await api.GetAsync<List<RoleModel>>(EndpointConstants.GET_ROLES);
+        var result = await api.GetAsync<List<RolesDto>>(EndpointConstants.GET_ROLES);
         if (result.IsSuccess)
         {
             data = result.Data;
@@ -109,13 +109,13 @@ else if (showDelete)
         }
     }
 
-    private void HandleDelete(RoleModel dataItem)
+    private void HandleDelete(RolesDto dataItem)
     {
         updateModel = dataItem;
         showDelete = true;
     }
 
-    private void HandleEdit(RoleModel dataItem)
+    private void HandleEdit(RolesDto dataItem)
     {
         updateModel = dataItem;
         showUpdate = true;
@@ -130,6 +130,9 @@ else if (showDelete)
             ("name", false) => data.OrderByDescending(a => a.Name).ToList(),
             ("normalized name", true) => data.OrderBy(a => a.NormalizedName).ToList(),
             ("normalized name", false) => data.OrderByDescending(a => a.NormalizedName).ToList(),
+            ("concurrency stamp", true) => data.OrderBy(a => a.ConcurrencyStamp).ToList(),
+            ("concurrency stamp", false) => data.OrderByDescending(a => a.ConcurrencyStamp).ToList(),
+            
             (_, _) => data
         };
         paging.CurrentPage = 1;
