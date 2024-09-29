@@ -9,8 +9,10 @@
                     <h3>Update Role</h3>
                     <small class="muted-color">Update role for users to be assigned later.</small>
                 </div>
-                <Input Focus Label="Name" @bind-Value="@model.Name" />
-                <Input Label="Normalized Name" ReadOnly Value="@model.NormalizedName" />               
+                <CascadingValue Value="@errors">
+                <Input Focus Label="Name" @bind-Value="@model.Name" Error="Name" />
+                <Input Label="Normalized Name" ReadOnly Value="@model.NormalizedName" />
+                </CascadingValue>
             </div>
             @if (errorMessage is not null)
             {
@@ -32,6 +34,7 @@
     private RolesDto? model;
     private Sheet sheet = new();
     private string? errorMessage;
+    private Dictionary<string, string>? errors;
 
     protected override async Task OnInitializedAsync()
     {
@@ -47,11 +50,12 @@
     private async Task HandleUpdate()
     {
         errorMessage = null;
-        if (model is null) return;
+        errors = model.GetErrors();
+        if (!model.IsValid()) return;        
         var result = await api.PutAsync<RolesDto, IEmpty>(string.Format(EndpointConstants.GET_ROLE, Id), model);
         if (!result.IsSuccess)
-        {
-            errorMessage = result.Message;
+        {            
+            errorMessage = result.Errors.Title;
             return;
         }
         await sheet.Close();

@@ -9,12 +9,14 @@
                     <h3>Add Role</h3>
                     <small class="muted-color">Create new role for users to be assigned later.</small>
                 </div>
-                <Input Focus Label="Name" @bind-Value="@model.Name" />
+                <CascadingValue Value="@errors">
+                <Input Focus Label="Name" @bind-Value="@model.Name" Error="Name" />
                 <Input Label="Normalized Name" ReadOnly Value="@model.NormalizedName" />
+                </CascadingValue>
             </div>
             @if (errorMessage is not null)
             {
-                <Alert Title="Update failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
+                <Alert Title="Create failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
             }
             <div class="flex g4 jce aic">
                 <Button Text="Add" OnClick="HandleAdd" />
@@ -31,15 +33,17 @@
     private RolesDto? model = new() { ConcurrencyStamp = Guid.NewGuid().ToString() };
     private Sheet sheet = new();
     private string? errorMessage;
+    private Dictionary<string, string>? errors;
 
     private async Task HandleAdd()
     {
         errorMessage = null;
-        if (model is null) return;
+        errors = model.GetErrors();
+        if (!model.IsValid()) return;
         var result = await api.PostAsync<RolesDto, RolesDto>(EndpointConstants.POST_ROLE, model);
         if (!result.IsSuccess)
         {
-            errorMessage = result.Message;
+            errorMessage = result.Errors.Title;
             return;
         }
         await sheet.Close();
