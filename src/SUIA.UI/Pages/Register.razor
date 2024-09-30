@@ -61,7 +61,7 @@
         }
         else
         {
-            message = result.Errors.Errors.First().Value[0];
+            message = result.Errors?.Errors?.FirstOrDefault().Value[0];
         }
     }
 

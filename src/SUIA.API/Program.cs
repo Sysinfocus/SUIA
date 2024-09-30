@@ -23,6 +23,10 @@ builder.Services.AddProblemDetails();
 var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
+    var scope = app.Services.CreateScope();
+    var dbc = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbc?.Database.EnsureCreated();
+
     app.UseSwagger();
     app.UseSwaggerUI();
 }

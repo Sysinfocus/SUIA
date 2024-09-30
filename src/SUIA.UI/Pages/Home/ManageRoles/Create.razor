@@ -37,6 +37,7 @@
 
     private async Task HandleAdd()
     {
+        if (model is null) return;
         errorMessage = null;
         errors = model.GetErrors();
         if (!model.IsValid()) return;

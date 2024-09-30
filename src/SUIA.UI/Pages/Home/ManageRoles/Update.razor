@@ -49,6 +49,7 @@
 
     private async Task HandleUpdate()
     {
+        if (model is null) return;
         errorMessage = null;
         errors = model.GetErrors();
         if (!model.IsValid()) return;        

@@ -8,7 +8,7 @@
 	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="8.0.8" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
-	  <PackageReference Include="Sysinfocus.AspNetCore.Components" Version="0.0.1.6" />
+	  <PackageReference Include="Sysinfocus.AspNetCore.Components" Version="0.0.1.7" />
 	  <PackageReference Include="System.Text.Json" Version="8.0.4" />
 	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.8" PrivateAssets="all" />
