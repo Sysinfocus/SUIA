@@ -8,6 +8,13 @@ public static class UserExtension
     {
         var claimsModel = claims.FromJson<LoginResponseDto>();
         if (claimsModel.Claims is null) return default;
-        return Encoding.UTF8.GetString(Convert.FromBase64String(claimsModel.Claims!)).FromJson<UserClaimsDto>();
+        try
+        {
+            return Encoding.UTF8.GetString(Convert.FromBase64String(claimsModel.Claims!)).FromJson<UserClaimsDto>();
+        }
+        catch
+        {
+            return default;
+        }
     }
 }

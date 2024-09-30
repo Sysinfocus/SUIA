@@ -14,9 +14,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
-    <PackageReference Include="Scalar.AspNetCore" Version="1.2.4" />
-    <PackageReference Include="System.Drawing.Common" Version="8.0.8" />
-    <PackageReference Include="System.Text.Json" Version="8.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.8.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="6.8.0" />
   </ItemGroup>
 
   <ItemGroup>

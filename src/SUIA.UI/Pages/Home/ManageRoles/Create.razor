@@ -18,7 +18,7 @@
             {
                 <Alert Title="Create failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
             }
-            <div class="flex g4 jce aic">
+            <div class="flex g8 jce aic">
                 <Button Text="Add" OnClick="HandleAdd" />
                 <Button Text="Discard" Type="ButtonType.Ghost" OnClick="HandleDiscard" />
             </div>
@@ -43,7 +43,7 @@
         var result = await api.PostAsync<RolesDto, RolesDto>(EndpointConstants.POST_ROLE, model);
         if (!result.IsSuccess)
         {
-            errorMessage = result.Errors.Title;
+            errorMessage = result.Message;
             return;
         }
         await sheet.Close();

@@ -1,12 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SUIA.API.Data;
+﻿using SUIA.API.Contracts;
 using SUIA.Shared.Models;
 
 namespace SUIA.API.Endpoints;
 
-public sealed class RolesEndpoint : IEndpoints
+public sealed class RolesEndpoint(IRoleService service) : IEndpoints
 {
     public void Register(IEndpointRouteBuilder routes)
     {
@@ -21,44 +18,34 @@ public sealed class RolesEndpoint : IEndpoints
         group.MapDelete("/{id}", DeleteRole);
     }
 
-    private async Task<IResult> GetAllRoles(HttpContext context, ApplicationDbContext adbc, CancellationToken cancellationToken)
-    {
-        return Results.Ok(await adbc.Roles.ToListAsync(cancellationToken));
-    }
+    private async Task<IResult> GetAllRoles(CancellationToken cancellationToken)
+        => Results.Ok(await service.GetAll(cancellationToken));
 
-    private async Task<IResult> GetRole(string id, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> GetRole(string id, CancellationToken cancellationToken)
     {        
-        var existingRole = await roleManager.FindByIdAsync(id);
+        var existingRole = await service.GetById(id, cancellationToken);
         if (existingRole is null) return Results.NotFound();
         return Results.Ok(existingRole);
     }
 
-    private async Task<IResult> CreateRole(RolesDto model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> CreateRole(RolesDto rolesDto, CancellationToken cancellationToken)
     {
-        var role = new IdentityRole(model.Name);
-        role.ConcurrencyStamp = Guid.NewGuid().ToString();
-        var result = await roleManager.CreateAsync(role);
-        if (result.Errors.Any()) return Results.Problem(result.Errors.First().Description, null, 400, "Failed to create role.");
+        var result = await service.Create(rolesDto, cancellationToken);
+        if (result is null) return Results.BadRequest("Failed to create role.");
         return Results.Ok(result);
     }
 
-    private async Task<IResult> UpdateRole(string id, RolesDto model, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> UpdateRole(string id, RolesDto rolesDto, CancellationToken cancellationToken)
     {
-        var existingRole = await roleManager.FindByIdAsync(id);
-        if (existingRole is null) return Results.NotFound();
-        existingRole.Name = model.Name;
-        existingRole.NormalizedName = model.NormalizedName;        
-        var result = await roleManager.UpdateAsync(existingRole);
-        if (result.Errors.Any()) return Results.Problem(result.Errors.First().Description, null, 400, "Failed to update role.");
-        return Results.NoContent();
+        var result = await service.UpdateById(id, rolesDto, cancellationToken);
+        if (result) return Results.NoContent();
+        return Results.BadRequest("Failed to update role.");        
     }
 
-    private async Task<IResult> DeleteRole(string id, ApplicationDbContext adbc, RoleManager<IdentityRole> roleManager, CancellationToken cancellationToken)
+    private async Task<IResult> DeleteRole(string id, CancellationToken cancellationToken)
     {
-        var existingRole = await roleManager.FindByIdAsync(id);
-        if (existingRole is null) return Results.NotFound();
-        var result = await roleManager.DeleteAsync(existingRole);
-        if (result.Errors.Any()) return Results.Problem(result.Errors.First().Description, null, 400, "Failed to delete role.");
-        return Results.NoContent();
+        var result = await service.DeleteById(id, cancellationToken);
+        if (result) return Results.NoContent();
+        return Results.BadRequest("Failed to delete role.");
     }
 }

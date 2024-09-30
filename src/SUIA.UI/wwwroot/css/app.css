@@ -10,15 +10,6 @@
     flex-direction: column;    
 }
 
-.light .container {
-    --btn-secondary-bg: #9d9dc966 !important;
-}
-
-.dark .container {
-    background: rgb(2,0,36);
-    background: linear-gradient(146deg, rgba(2,0,36,1) 0%, rgba(9,9,121,0.5) 50%, navy 100%);
-}
-
 a {
     text-decoration: none;
     transition: 300ms ease-in-out

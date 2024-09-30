@@ -1,18 +1,16 @@
-﻿namespace SUIA.API.Endpoints;
+﻿using SUIA.API.Contracts;
 
-public static class RegisterServices
+namespace SUIA.API.Configuration;
+
+public static class RegisterEndpoints
 {
-    public static void AddServices(this IServiceCollection services)
+    public static IServiceCollection AddEndpoints(this IServiceCollection services)
     {
-
-    }
-
-    public static void AddEndpoints(this IServiceCollection services)
-    {
-        var endpoints = typeof(RegisterServices).Assembly.GetTypes()
+        var endpoints = typeof(RegisterEndpoints).Assembly.GetTypes()
             .Where(p => typeof(IEndpoints).IsAssignableFrom(p) && p.Name != nameof(IEndpoints));
-        foreach(var endpoint in endpoints)
+        foreach (var endpoint in endpoints)
             services.AddScoped(typeof(IEndpoints), endpoint);
+        return services;
     }
 
     public static void UseEndpoints(this WebApplication app)

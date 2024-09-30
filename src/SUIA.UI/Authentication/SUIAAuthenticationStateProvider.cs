@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Components.Authorization;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
 using SUIA.Shared.Models;
 using SUIA.Shared.Utilities;
 using SUIA.UI.Endpoints;
@@ -8,16 +10,19 @@ using System.Security.Claims;
 
 namespace SUIA.UI.Authentication;
 
-public class SUIAAuthenticationStateProvider(BrowserExtensions browserExtensions, IAPIService api, StateManager stateManager) : AuthenticationStateProvider
+public class SUIAAuthenticationStateProvider(IJSRuntime jSRuntime, NavigationManager navigationManager, IAPIService api, StateManager stateManager) : AuthenticationStateProvider
 {
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
+
         var identity = new ClaimsIdentity();
-        var session = await browserExtensions.GetFromLocalStorage("session", null);
-        if (session is null)
-        {            
+        var session = await jSRuntime.InvokeAsync<string>("localStorage.getItem", "session");
+        if (session is null) return new AuthenticationState(new ClaimsPrincipal(identity));
+
+        var url = navigationManager.ToBaseRelativePath(navigationManager.Uri);
+        if (string.IsNullOrWhiteSpace(url) || url.StartsWith("login", StringComparison.OrdinalIgnoreCase))
             return new AuthenticationState(new ClaimsPrincipal(identity));
-        }
+
         var userClaims = session.FromRawClaims();
         if (userClaims is null) return new AuthenticationState(new ClaimsPrincipal(identity));
 
@@ -38,30 +43,36 @@ public class SUIAAuthenticationStateProvider(BrowserExtensions browserExtensions
     }
 
     private async ValueTask<bool> ValidateUser()
-    {
+    {        
         var result = await api.GetAsync<UserInfoDto>(EndpointConstants.GET_INFO);
+        if (result is null) return false;
         return result.StatusCode != System.Net.HttpStatusCode.Unauthorized;
     }
 
     public async Task Login(LoginResponseDto model)
     {
         if (model is null) return;
-        await browserExtensions.SetToLocalStorage("session", model.ToJson());
+        await jSRuntime.InvokeVoidAsync("localStorage.setItem", "session", model.ToJson());
         var claims = await api.GetAsync<string>(EndpointConstants.GET_CLAIMS);
         if (claims is not null && model is not null)
         {
-            model.Claims = claims.Data;
+            model.Claims = claims.StringValue;
         }
-        await browserExtensions.SetToLocalStorage("session", model.ToJson());
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        browserExtensions.Goto("/Home");
+        await jSRuntime.InvokeVoidAsync("localStorage.setItem", "session", model.ToJson());
+        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());        
     }  
 
     public async Task Logout()
     {
         stateManager.ClearState();
-        await api.GetAsync<IEmpty>(EndpointConstants.LOGOUT);
-        await browserExtensions.RemoveFromLocalStorage("session");
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        try
+        {
+            await api.GetAsync<IEmpty>(EndpointConstants.LOGOUT);
+        }
+        finally
+        {
+            await jSRuntime.InvokeVoidAsync("localStorage.removeItem", "session");
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        }
     }
 }

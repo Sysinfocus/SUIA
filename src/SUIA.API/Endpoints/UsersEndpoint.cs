@@ -1,14 +1,12 @@
 ﻿using System.Security.Claims;
-using System.Text;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using SUIA.API.Contracts;
 using SUIA.API.Data;
 using SUIA.Shared.Models;
-using SUIA.Shared.Utilities;
 
 namespace SUIA.API.Endpoints;
 
-public sealed class UsersEndpoint : IEndpoints
+public sealed class UsersEndpoint(IUserService service) : IEndpoints
 {
     public void Register(IEndpointRouteBuilder routes)
     {
@@ -26,31 +24,21 @@ public sealed class UsersEndpoint : IEndpoints
         group.MapDelete("/{id}", DeleteUser);
     }
 
-    private async Task<IResult> GetAllUsers(HttpContext context, ApplicationDbContext adbc, CancellationToken cancellationToken)
-    {
-        return Results.Ok(await adbc.Users.ToListAsync(cancellationToken));
-    }
+    private async Task<IResult> GetAllUsers(CancellationToken cancellationToken)
+        => Results.Ok(await service.GetAll(cancellationToken));
 
-    private async Task<IResult> GetUser(string id, ApplicationDbContext adbc, CancellationToken cancellationToken)
+    private async Task<IResult> GetUser(string id, CancellationToken cancellationToken)
     {
-        var user = await adbc.Users.FindAsync([id], cancellationToken: cancellationToken);
+        var user = await service.GetById(id, cancellationToken);        
         if (user is null) return Results.NotFound();
         return Results.Ok(user);
     }
 
-    private async Task<IResult> GetUserClaims(ClaimsPrincipal user, UserManager<IdentityUser> userManager)
+    private async Task<IResult> GetUserClaims(ClaimsPrincipal user, CancellationToken cancellationToken)
     {
-        var validUser = await userManager.GetUserAsync(user);
-        if (validUser is null) return Results.Unauthorized();
-
-        var claims = new UserClaimsDto(
-            validUser.Id,
-            validUser.UserName!,
-            validUser.Email!,
-            validUser.Email!.StartsWith("admin@") ? "Admin" : "User");        
-
-        var toBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(claims.ToJson()));
-        return Results.Ok(toBase64);
+        var claims = await service.GetUserClaims(user, cancellationToken);
+        if (string.IsNullOrEmpty(claims)) return Results.Unauthorized();
+        return Results.Content(claims);        
     }
 
     private async Task<IResult> LogoutUser(SignInManager<IdentityUser> signInManager, CancellationToken cancellationToken)
@@ -64,17 +52,11 @@ public sealed class UsersEndpoint : IEndpoints
         await Task.CompletedTask;
     }
 
-    private async Task<IResult> UpdateUser(string id, UserDto model, ApplicationDbContext adbc, CancellationToken cancellationToken)
+    private async Task<IResult> UpdateUser(string id, UserDto model, CancellationToken cancellationToken)
     {
-        var existingUser = await adbc.Users.FindAsync([id], cancellationToken: cancellationToken);
-        if (existingUser is null) return Results.NotFound();
-        existingUser.EmailConfirmed = model.EmailConfirmed;
-        existingUser.PhoneNumberConfirmed = model.PhoneNumberConfirmed;
-        existingUser.TwoFactorEnabled = model.TwoFactorEnabled;
-        existingUser.LockoutEnabled = model.LockoutEnabled;
-        adbc.Update(existingUser);
-        await adbc.SaveChangesAsync(cancellationToken);
-        return Results.NoContent();
+        var result = await service.UpdateById(id, model, cancellationToken);
+        if (result) return Results.NoContent();
+        return Results.BadRequest("Failed to update user.");
     }
 
     private async Task<IResult> UpdatePassword(string id, ChangePasswordRequestDto request, ApplicationDbContext adbc, UserManager<IdentityUser> userManager, CancellationToken cancellationToken)
@@ -86,12 +68,10 @@ public sealed class UsersEndpoint : IEndpoints
         return Results.NoContent();
     }
 
-    private async Task<IResult> DeleteUser(string id, ApplicationDbContext adbc, CancellationToken cancellationToken)
+    private async Task<IResult> DeleteUser(string id, CancellationToken cancellationToken)
     {
-        var existingUser = await adbc.Users.FindAsync([id], cancellationToken: cancellationToken);
-        if (existingUser is null) return Results.NotFound();
-        adbc.Remove(existingUser);
-        await adbc.SaveChangesAsync(cancellationToken);
-        return Results.NoContent();
+        var result = await service.DeleteById(id, cancellationToken);
+        if (result) return Results.NoContent();
+        return Results.BadRequest("Failed to delete user.");
     }
 }

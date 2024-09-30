@@ -1,5 +1,4 @@
-﻿
-namespace SUIA.API.Endpoints;
+﻿namespace SUIA.API.Contracts;
 
 public interface IEndpoints
 {

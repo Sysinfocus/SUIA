@@ -7,13 +7,9 @@
     {
         try {
             var currentUrl = be.GetUrl().Replace(be.GetBaseUrl(), "").ToLower();
-            if (currentUrl == "" || currentUrl.StartsWith("login"))
+            if (currentUrl != "" && !currentUrl.StartsWith("login"))
             {
-
-            }
-            else
-            {
-                await ((SUIAAuthenticationStateProvider)asp).Logout();
+                await ((SUIAAuthenticationStateProvider)asp).Logout();                
             }
         }
         finally {

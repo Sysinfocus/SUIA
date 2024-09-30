@@ -10,7 +10,7 @@
     <div class="flex-col">
         @if (pagedData is not null)
         {
-            <DataTable Items="@pagedData" TItem="RolesDto" Height="calc(100vh - 190px)">
+            <DataTable Items="@pagedData" TItem="RolesDto" Height="calc(100vh - 190px)" OnDoubleClick="HandleEdit" OnEnterKey="HandleEdit" OnDeleteKey="HandleDelete">
                 <DataColumns>
                     <DataTableColumn Freeze="0px" Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
                         <Template>
@@ -132,7 +132,7 @@ else if (showDelete)
             ("normalized name", false) => data.OrderByDescending(a => a.NormalizedName).ToList(),
             ("concurrency stamp", true) => data.OrderBy(a => a.ConcurrencyStamp).ToList(),
             ("concurrency stamp", false) => data.OrderByDescending(a => a.ConcurrencyStamp).ToList(),
-            
+
             (_, _) => data
         };
         paging.CurrentPage = 1;
@@ -158,14 +158,14 @@ else if (showDelete)
 
     private void HandleDiscard()
     {
-        showAdd = false;
+        showAdd = false;        
     }
 
     private async Task HandleUpdate()
     {
         await LoadDataAsync();
         updateModel = null;
-        showUpdate = false;
+        showUpdate = false;        
     }
 
     private void HandleCancel()

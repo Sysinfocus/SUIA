@@ -21,7 +21,7 @@
                 </CascadingValue>
                 @if (message is not null)
                 {
-                    <Alert Title="@title" Description="@message" Icon="error" Type="AlertType.Destructive" />
+                    <Alert Title="" Description="@message" Icon="error" Type="AlertType.Destructive" />
                 }
             </CardContent>
             <CardFooter>
@@ -45,13 +45,13 @@
 
 @code
 {
-    private string? title, message;
+    private string? message;
     private Dictionary<string, string>? errors;
     private RegisterRequestDto model = new();
 
     private async Task HandleRegister()
     {
-        title = message = null;
+        message = null;
         errors = model.GetErrors();
         if (!model.IsValid()) return;
         var result = await api.PostAsync<RegisterRequestDto, IEmpty>(EndpointConstants.REGISTER, model);
@@ -61,7 +61,6 @@
         }
         else
         {
-            title = result.Errors.Title;
             message = result.Errors.Errors.First().Value[0];
         }
     }

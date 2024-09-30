@@ -18,7 +18,7 @@
             {
                 <Alert Title="Update failed" Description="@errorMessage" Icon="error" Type="AlertType.Destructive" />
             }
-            <div class="flex g4 jce aic">
+            <div class="flex g8 jce aic">
                 <Button Text="Update" OnClick="HandleUpdate" />
                 <Button Text="Cancel" Type="ButtonType.Ghost" OnClick="HandleCancel" />
             </div>
@@ -55,7 +55,7 @@
         var result = await api.PutAsync<RolesDto, IEmpty>(string.Format(EndpointConstants.GET_ROLE, Id), model);
         if (!result.IsSuccess)
         {            
-            errorMessage = result.Errors.Title;
+            errorMessage = result?.Message;
             return;
         }
         await sheet.Close();

@@ -7,7 +7,7 @@
     <div class="flex-col">
         @if (pagedData is not null)
         {
-            <DataTable Items="@pagedData" TItem="UserDto" Height="calc(100vh - 190px)">
+            <DataTable Items="@pagedData" TItem="UserDto" Height="calc(100vh - 190px)" OnDoubleClick="HandleEdit" OnEnterKey="HandleEdit" OnDeleteKey="HandleDelete">
                 <DataColumns>
                     <DataTableColumn Freeze="0" Property="d => d.Id" Header="Actions" Width="75px" Align="Alignment.Center">
                         <Template>

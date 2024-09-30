@@ -22,7 +22,7 @@ builder.Services.AddTransient(_ => client);
 //});
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<AuthenticationStateProvider, SUIAAuthenticationStateProvider>();
-builder.Services.AddTransient<IAPIService, APIService>();
+builder.Services.AddScoped<IAPIService, APIService>();
 builder.Services.AddScoped(_ => new Settings(settings!.ApiEndpoint));
 
 builder.Services.AddSysinfocus();
